@@ -6,8 +6,9 @@ Grid Conquest is a real-time multiplayer grid application built as a shared boar
 
 **Frontend:** https://my-grid-app-1.onrender.com
 **Backend:** https://my-grid-app.onrender.com
-## Repository
 
+## Repository
+https://github.com/ishika61/My-Grid-App
 
 
 ---
@@ -274,4 +275,8 @@ http://localhost:5000
 * Match history
 * User authentication
 * Global rankings
+
+
+screenshots:
+<img width="1920" height="2049" alt="asigemnt" src="https://github.com/user-attachments/assets/b9adc61d-ed17-49b3-9ca2-b0dda91ace34" />
 
