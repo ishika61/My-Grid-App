@@ -1,6 +1,6 @@
-# Grid Conquest
+#My Grid App
 
-Grid Conquest is a real-time multiplayer grid application built as a shared board where users can capture cells on a 20×20 grid. Each capture is persisted in MongoDB and instantly synchronized across all connected clients using Socket.io.
+My Grid App is a real-time multiplayer grid application built as a shared board where users can capture cells on a 20×20 grid. Each capture is persisted in MongoDB and instantly synchronized across all connected clients using Socket.io.
 
 ## Live Demo
 
