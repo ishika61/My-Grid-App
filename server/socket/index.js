@@ -13,17 +13,17 @@ const initializeSocket = (httpServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log(`🔌 Socket connected: ${socket.id}`);
+    console.log(`Socket connected: ${socket.id}`);
 
     registerUserHandlers(io, socket);
     registerGridHandlers(io, socket);
 
     socket.on("disconnect", () => {
-      console.log(`🔌 Socket disconnected: ${socket.id}`);
+      console.log(`Socket disconnected: ${socket.id}`);
     });
   });
 
-  console.log("✅ Socket.io initialized");
+  console.log("Socket.io initialized");
 
   return io;
 };

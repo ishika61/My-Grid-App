@@ -3,6 +3,7 @@ const gridService = require("../../services/gridService");
 const statsService = require("../../services/statsService");
 const onlineUsersService = require("../../services/onlineUsersService");
 const ApiError = require("../../utils/ApiError");
+const { CAPTURE_COOLDOWN_MS } = require("../../config/constants");
 
 const broadcastRealtimeUpdates = async (io) => {
   const [leaderboard, stats] = await Promise.all([
@@ -26,25 +27,61 @@ const registerGridHandlers = (io, socket) => {
       return;
     }
 
+    if (onlineUsersService.isCaptureInFlight(socket.id)) {
+      socket.emit(SOCKET_EVENTS.CELL_CAPTURE_RESULT, {
+        success: false,
+        message: "Capture already in progress",
+      });
+      return;
+    }
+
+    const cooldown = onlineUsersService.getCooldown(socket.id);
+
+    if (cooldown.isActive) {
+      socket.emit(SOCKET_EVENTS.CELL_CAPTURE_RESULT, {
+        success: false,
+        cooldownUntil: cooldown.cooldownUntil,
+        remainingMs: cooldown.remainingMs,
+        message: "Capture cooldown is active",
+      });
+      return;
+    }
+
     try {
+      onlineUsersService.setCaptureInFlight(socket.id, true);
+
       const result = await gridService.captureCell({
         cellIndex: Number(cellIndex),
         ownerName: user.username,
+        ownerId: socket.id,
         color: user.color,
       });
 
       if (result.success) {
+        const cooldownUntil = onlineUsersService.markCapture(
+          socket.id,
+          CAPTURE_COOLDOWN_MS
+        );
+        onlineUsersService.setCaptureInFlight(socket.id, false);
+
         io.emit(SOCKET_EVENTS.CELL_UPDATE, { cell: result.cell });
         io.emit(SOCKET_EVENTS.ACTIVITY_UPDATE, { activity: result.activity });
+        io.emit(SOCKET_EVENTS.ONLINE_UPDATE, {
+          count: onlineUsersService.getCount(),
+          users: onlineUsersService.getPublicList(),
+        });
 
         socket.emit(SOCKET_EVENTS.CELL_CAPTURE_RESULT, {
           success: true,
           cell: result.cell,
+          cooldownUntil,
         });
 
         await broadcastRealtimeUpdates(io);
         return;
       }
+
+      onlineUsersService.setCaptureInFlight(socket.id, false);
 
       socket.emit(SOCKET_EVENTS.CELL_CAPTURE_RESULT, {
         success: false,
@@ -59,6 +96,8 @@ const registerGridHandlers = (io, socket) => {
         success: false,
         message,
       });
+    } finally {
+      onlineUsersService.setCaptureInFlight(socket.id, false);
     }
   });
 };

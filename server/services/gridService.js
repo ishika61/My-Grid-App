@@ -6,13 +6,13 @@ const { TOTAL_CELLS } = require("../config/constants");
 const getGridState = async () => {
   const cells = await Cell.find()
     .sort({ index: 1 })
-    .select("index row col ownerName color capturedAt")
+    .select("index row col ownerName ownerId color capturedAt")
     .lean();
 
   return cells;
 };
 
-const captureCell = async ({ cellIndex, ownerName, color }) => {
+const captureCell = async ({ cellIndex, ownerName, ownerId, color }) => {
   if (
     typeof cellIndex !== "number" ||
     cellIndex < 0 ||
@@ -23,6 +23,10 @@ const captureCell = async ({ cellIndex, ownerName, color }) => {
 
   if (!ownerName || !ownerName.trim()) {
     throw new ApiError(400, "Owner name is required");
+  }
+
+  if (!ownerId) {
+    throw new ApiError(400, "Owner id is required");
   }
 
   if (!color) {
@@ -39,6 +43,7 @@ const captureCell = async ({ cellIndex, ownerName, color }) => {
     {
       $set: {
         ownerName: trimmedOwner,
+        ownerId,
         color,
         capturedAt: new Date(),
       },
@@ -66,6 +71,7 @@ const captureCell = async ({ cellIndex, ownerName, color }) => {
   const activity = await Activity.create({
     type: "capture",
     ownerName: trimmedOwner,
+    ownerId,
     color,
     cellIndex: updatedCell.index,
     row: updatedCell.row,

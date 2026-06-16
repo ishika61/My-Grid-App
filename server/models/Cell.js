@@ -24,6 +24,10 @@ const cellSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    ownerId: {
+      type: String,
+      default: null,
+    },
     color: {
       type: String,
       default: null,
@@ -39,6 +43,7 @@ const cellSchema = new mongoose.Schema(
 );
 
 cellSchema.index({ ownerName: 1 });
+cellSchema.index({ ownerId: 1 });
 cellSchema.index({ row: 1, col: 1 });
 
 module.exports = mongoose.model("Cell", cellSchema);

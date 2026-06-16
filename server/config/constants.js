@@ -1,7 +1,9 @@
 const GRID_SIZE = 20;
 const TOTAL_CELLS = GRID_SIZE * GRID_SIZE;
+const CAPTURE_COOLDOWN_MS = 3000;
 
 module.exports = {
   GRID_SIZE,
   TOTAL_CELLS,
+  CAPTURE_COOLDOWN_MS,
 };

@@ -5,7 +5,7 @@ const initializeGrid = async () => {
   const existingCount = await Cell.countDocuments();
 
   if (existingCount >= TOTAL_CELLS) {
-    console.log(`✅ Grid already initialized (${existingCount} cells)`);
+    console.log(`Grid already initialized (${existingCount} cells)`);
     return;
   }
 
@@ -24,6 +24,7 @@ const initializeGrid = async () => {
             row,
             col,
             ownerName: null,
+            ownerId: null,
             color: null,
             capturedAt: null,
           },
@@ -37,7 +38,7 @@ const initializeGrid = async () => {
   const insertedCount = result.upsertedCount ?? 0;
 
   console.log(
-    `✅ Grid initialized: ${insertedCount} new cells created (${await Cell.countDocuments()} total)`
+    `Grid initialized: ${insertedCount} new cells created (${await Cell.countDocuments()} total)`
   );
 };
 

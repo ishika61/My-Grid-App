@@ -11,13 +11,19 @@ const getLeaderboard = async (limit = 10) => {
     },
     {
       $group: {
-        _id: "$ownerName",
+        _id: {
+          ownerId: { $ifNull: ["$ownerId", "$ownerName"] },
+          ownerName: "$ownerName",
+          color: "$color",
+        },
         color: { $first: "$color" },
+        ownerName: { $first: "$ownerName" },
+        ownerId: { $first: "$ownerId" },
         capturedCells: { $sum: 1 },
       },
     },
     {
-      $sort: { capturedCells: -1, _id: 1 },
+      $sort: { capturedCells: -1, ownerName: 1 },
     },
     {
       $limit: limit,
@@ -25,24 +31,34 @@ const getLeaderboard = async (limit = 10) => {
     {
       $project: {
         _id: 0,
-        ownerName: "$_id",
+        ownerName: 1,
+        ownerId: 1,
         color: 1,
         capturedCells: 1,
       },
     },
   ]);
 
-  return leaderboard;
+  return leaderboard.map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+  }));
 };
 
 const getGridStats = async () => {
-  const claimedCount = await Cell.countDocuments({
-    ownerName: { $ne: null },
-  });
-
-  const uniqueOwners = await Cell.distinct("ownerName", {
-    ownerName: { $ne: null },
-  });
+  const [claimedCount, uniqueOwners, capturesLastMinute, leaderboard] =
+    await Promise.all([
+      Cell.countDocuments({
+        ownerName: { $ne: null },
+      }),
+      Cell.distinct("ownerName", {
+        ownerName: { $ne: null },
+      }),
+      Activity.countDocuments({
+        createdAt: { $gte: new Date(Date.now() - 60 * 1000) },
+      }),
+      getLeaderboard(1),
+    ]);
 
   return {
     totalCells: TOTAL_CELLS,
@@ -50,6 +66,8 @@ const getGridStats = async () => {
     unclaimedCells: TOTAL_CELLS - claimedCount,
     uniqueOwners: uniqueOwners.length,
     claimPercentage: Number(((claimedCount / TOTAL_CELLS) * 100).toFixed(1)),
+    capturesPerMinute: capturesLastMinute,
+    mostActivePlayer: leaderboard[0] || null,
   };
 };
 

@@ -28,6 +28,13 @@ const registerUserHandlers = (io, socket) => {
       return;
     }
 
+    if (onlineUsersService.hasUsername(validation.username)) {
+      socket.emit(SOCKET_EVENTS.USER_JOIN_ERROR, {
+        message: "That username is already online",
+      });
+      return;
+    }
+
     const color = generateUserColor();
 
     onlineUsersService.add(socket.id, {

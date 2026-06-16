@@ -12,6 +12,10 @@ const activitySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    ownerId: {
+      type: String,
+      default: null,
+    },
     color: {
       type: String,
       required: true,
